@@ -434,7 +434,8 @@ module WizardActsAsOrderedTree #:nodoc:
               if @old_parent == 'root'
                 reorder_roots
               elsif @old_parent
-                @old_parent.reorder_children
+                #@old_parent.reorder_children
+                @old_parent.send(:reorder_children)
               end
             end
 
