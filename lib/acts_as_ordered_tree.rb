@@ -218,7 +218,7 @@ module WizardActsAsOrderedTree #:nodoc:
         #   (descendants follow)
         def orphan
           self[foreign_key_column] = 0
-          self.send("update")
+          save
         end
 
         # orphans the node's children
