@@ -36,8 +36,8 @@ module WizardActsAsOrderedTree #:nodoc:
         #   class CreatePeople < ActiveRecord::Migration
         #     def self.up
         #       create_table :people do |t|
-        #         t.column :parent_id ,:integer ,:null => false ,:default => 0
-        #         t.column :position  ,:integer
+        #         t.column :parent_id, :integer, :null => false, :default => 0
+        #         t.column :position, :integer
         #       end
         #       add_index(:people, :parent_id)
         #     end
@@ -76,6 +76,7 @@ module WizardActsAsOrderedTree #:nodoc:
               reload ? find(:all, :conditions => "#{configuration[:foreign_key]} = 0", :order => "#{configuration[:order]}") : @@roots
             end
 
+            before_validation_on_create :set_parent_if_nil#, :add_to_list
             before_create  :add_to_list
             before_update  :check_list_changes
             after_update   :reorder_old_list
@@ -317,6 +318,11 @@ module WizardActsAsOrderedTree #:nodoc:
         end
 
         private
+        
+          def set_parent_if_nil
+            self.write_attribute(:parent_id, 0) if self.parent_node.nil? || self.parent_id.blank?
+          end
+        
           def find_root
             node = self
             node = node.parent while node.parent(true)
