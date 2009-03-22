@@ -56,7 +56,8 @@ module WizardActsAsOrderedTree #:nodoc:
           has_many   :child_nodes,
                      :class_name    => name,
                      :foreign_key   => configuration[:foreign_key],
-                     :order         => configuration[:order]
+                     :order         => configuration[:order],
+                     :extend        => ReorderExtension
 
           cattr_reader :roots
 
