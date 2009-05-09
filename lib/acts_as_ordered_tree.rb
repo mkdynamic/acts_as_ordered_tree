@@ -46,14 +46,14 @@ module WizardActsAsOrderedTree #:nodoc:
         #
         def acts_as_ordered_tree(options = {})
           configuration = { :foreign_key   => :parent_id ,
-                            :order         => :position  }
+                            :order         => :position }
           configuration.update(options) if options.is_a?(Hash)
 
-          belongs_to :parent_node,
+          belongs_to :parent,
                      :class_name    => name,
                      :foreign_key   => configuration[:foreign_key]
 
-          has_many   :child_nodes,
+          has_many   :children,
                      :class_name    => name,
                      :foreign_key   => configuration[:foreign_key],
                      :order         => configuration[:order],
@@ -74,7 +74,7 @@ module WizardActsAsOrderedTree #:nodoc:
 
             def self.roots(reload = false)
               reload = true if !@@roots
-              reload ? find(:all, :conditions => "#{configuration[:foreign_key]} = 0", :order => "#{configuration[:order]}") : @@roots
+              reload ? find(:all, :conditions => "#{configuration[:foreign_key]} IS NULL", :order => "#{configuration[:order]}") : @@roots
             end
 
             before_validation_on_create :set_parent_if_nil#, :add_to_list
@@ -114,28 +114,6 @@ module WizardActsAsOrderedTree #:nodoc:
         def ancestors(reload = false)
           reload = true if !@ancestors
           reload ? find_ancestors : @ancestors
-        end
-
-        # returns object's parent in the tree
-        #   auto-loads itself on first access
-        #   instead of returning "<parent_node not loaded yet>"
-        #
-        #   return is cached, unless nil
-        #   use parent(true) to force a reload
-        def parent(reload=false)
-          reload = true if !@parent
-          reload ? parent_node(true) : @parent
-        end
-
-        # returns an array of the object's immediate children
-        #   auto-loads itself on first access
-        #   instead of returning "<child_nodes not loaded yet>"
-        #
-        #   return is cached
-        #   use children(true) to force a reload
-        def children(reload=false)
-          reload = true if !@children
-          reload ? child_nodes(true) : @children
         end
 
         # returns an array of the object's descendants
@@ -219,7 +197,7 @@ module WizardActsAsOrderedTree #:nodoc:
         # orphans the node (sends it to the roots list)
         #   (descendants follow)
         def orphan
-          self[foreign_key_column] = 0
+          self[foreign_key_column] = nil
           save
         end
 
@@ -321,7 +299,7 @@ module WizardActsAsOrderedTree #:nodoc:
         private
         
           def set_parent_if_nil
-            self.write_attribute(:parent_id, 0) if self.parent_node.nil? || self.parent_id.blank?
+            self.write_attribute(:parent_id, nil) if self.parent.nil? || self.parent_id.blank?
           end
         
           def find_root
@@ -360,7 +338,7 @@ module WizardActsAsOrderedTree #:nodoc:
             if parent(true)
               scope = "#{foreign_key_column} = #{parent.id}"
             else
-              scope = "#{foreign_key_column} = 0"
+              scope = "#{foreign_key_column} IS NULL"
             end
             if new_position < position_in_list
               # moving from lower to higher, increment all in between
