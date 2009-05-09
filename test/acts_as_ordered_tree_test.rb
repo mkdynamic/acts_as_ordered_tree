@@ -77,6 +77,7 @@ class ActsAsOrderedTreeTest < Test::Unit::TestCase
     # since the re-ordering action is actually happening against people[0].children
     # (which is what self_and_syblings returns)
     assert_equal people[5].self_and_siblings, people[0].children
+    people[5].reload
     assert_equal [people[1],people[5],people[6]], people[5].self_and_siblings
     people[5].reload
     assert_equal 2, people[5].position_in_list
@@ -369,7 +370,7 @@ class ActsAsOrderedTreeTest < Test::Unit::TestCase
     #  +----+-----------+----------+-----------+
     #  | id | parent_id | position | name      |
     #  +----+-----------+----------+-----------+
-    #  |  1 |         0 |        1 | Person_1  |
+    #  |  1 |      null |        1 | Person_1  |
     #  |  2 |         1 |        1 | Person_2  |
     #  |  3 |         1 |        2 | Person_3  |
     #  |  4 |         3 |        1 | Person_4  |

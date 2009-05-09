@@ -77,7 +77,7 @@ module WizardActsAsOrderedTree #:nodoc:
               reload ? find(:all, :conditions => "#{configuration[:foreign_key]} IS NULL", :order => "#{configuration[:order]}") : @@roots
             end
 
-            before_validation_on_create :set_parent_if_nil#, :add_to_list
+            before_validation_on_create :set_parent_if_nil
             before_create  :add_to_list
             before_update  :check_list_changes
             after_update   :reorder_old_list
@@ -91,7 +91,7 @@ module WizardActsAsOrderedTree #:nodoc:
         ## Tree Read Methods
 
         # returns an ordered array of all nodes without a parent
-        #   i.e. parent_id = 0
+        #   i.e. parent_id = nil
         #
         #   return is cached
         #   use self.class.roots(true) to force a reload
@@ -205,7 +205,7 @@ module WizardActsAsOrderedTree #:nodoc:
         #   sends all immediate children to the 'roots' list
         def orphan_children
           self.class.transaction do
-            children(true).each{|child| child.orphan}
+            children(true).each{ |child| child.orphan }
           end
         end
 
@@ -214,7 +214,7 @@ module WizardActsAsOrderedTree #:nodoc:
         def parent_adopts_children
           if parent(true)
             self.class.transaction do
-              children(true).each{|child| parent.children << child}
+              children(true).each{ |child| parent.children << child }
             end
           else
             orphan_children
